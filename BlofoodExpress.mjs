@@ -1,4 +1,4 @@
-import { createAccount, getBalance, deploy, contractCreateOrder, contractPushOrderContent, contractStoreAcceptOrder, contractDeliveryAcceptOrder, deploySignUp, signUpAddContract, signUpGetContract, signUpCheck, contractGetStore, contractSetStore, contractGetClosedStatus, contractSetClosedStatus, contractMenuUpdate, contractGetMenuVersion, contractGetMenu, contractGetOrderContent } from "./BlofoodWeb3.mjs";
+import { createAccount, getBalance, deploy, contractCreateOrder, contractPushOrderContent, contractStoreAcceptOrder, contractDeliveryAcceptOrder, deploySignUp, signUpAddContract, signUpGetContract, signUpCheck, contractGetStore, contractSetStore, contractGetClosedStatus, contractSetClosedStatus, contractMenuUpdate, contractGetMenuVersion, contractGetMenu, contractGetOrderContent, contractStoreOvertime, contractFindDeliveryManOvertime, confirmPickUp, confirmDelivery } from "./BlofoodWeb3.mjs";
 import express from "express";
 import bodyParser from 'body-parser';
 const app = express();
@@ -246,6 +246,54 @@ app.post("/contract/deliveryAcceptOrder", async (req, res) => {
         res.status(200).json({ status: status });
     } catch (error) {
         console.error(error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+})
+
+// 設定店家超時
+app.post("/contract/storeOvertime", async (req, res) => {
+    try {
+        console.log(req.body);
+        let { contractAddress, storeWallet, storePassword, id } = req.body;
+        let status = await contractStoreOvertime(contractAddress, storeWallet, storePassword, id);
+        res.status(200).json({ status: status });
+    } catch (error) {
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+})
+
+// 尋找外送員超時
+app.post("/contract/findDeliveryManOvertime", async (req, res) => {
+    try {
+        console.log(req.body);
+        let { contractAddress, consumerWallet,consumerPassword, id } = req.body;
+        let status = await contractFindDeliveryManOvertime(contractAddress, consumerWallet, consumerPassword, id);
+        res.status(200).json({ status: status });
+    } catch (error) {
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+})
+
+// 外送員收餐確認
+app.post("/contract/confirmPickUp", async (req, res) => {
+    try {
+        console.log(req.body);
+        let { contractAddress, deliveryWallet, deliveryPassword, id } = req.body;
+        let status = await confirmPickUp(contractAddress, deliveryWallet, deliveryPassword, id);
+        res.status(200).json({ status: status });
+    } catch (error) {
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+})
+
+// 外送員已送達
+app.post("/contract/confirmDelivery", async (req, res) => {
+    try {
+        console.log(req.body);
+        let { contractAddress, deliveryWallet, deliveryPassword, id } = req.body;
+        let status = await confirmDelivery(contractAddress, deliveryWallet, deliveryPassword, id);
+        res.status(200).json({ status: status });
+    } catch (error) {
         res.status(500).json({ error: 'Internal Server Error' });
     }
 })

@@ -593,4 +593,125 @@ async function contractDeliveryAcceptOrder(contractAddress, _id, _deliveryName, 
     }
 }
 
-export { createAccount, getBalance, deploy, contractCreateOrder, contractPushOrderContent, contractStoreAcceptOrder, contractDeliveryAcceptOrder, deploySignUp, signUpAddContract, signUpGetContract, signUpCheck, contractGetStore, contractSetStore, contractGetClosedStatus, contractSetClosedStatus, contractMenuUpdate, contractGetMenuVersion, contractGetMenu, contractGetOrderContent };
+// 店家超時
+async function contractStoreOvertime(contractAddress, storeWallet, storePassword, _id) {
+    try {
+        const Account = storeWallet;
+        const Password = storePassword;
+        await new Promise(resolve => setTimeout(resolve, 5000));
+        try {
+            await web3.eth.personal.unlockAccount(Account, Password);
+            console.log("成功解鎖帳戶");
+        } catch (error) {
+            console.error("解鎖帳戶出錯:", error);
+            throw error;
+        }
+        const ABI = JSON.parse(fs.readFileSync('./Order.abi', 'utf8'));
+        const SC = contractAddress;
+        const Contract = new web3.eth.Contract(ABI, SC);
+
+        const transactionReceipt = await Contract.methods.storeOvertime(_id)
+            .send({ from: Account });
+        console.log(transactionReceipt);
+        if (transactionReceipt.status) {
+            console.log("更改店家超時狀態成功")
+            return true;
+        } else {
+            console.error("更改店家超時狀態失敗");
+            return false;
+        }
+    } catch (error) {
+        console.error("更改店家超時狀態出錯", error);
+        throw error;
+    }
+    
+}
+
+// 尋找外送員超時
+async function contractFindDeliveryManOvertime(contractAddress, consumerWallet, consumerPassword, _id) { 
+    try {
+        const Account = consumerWallet;
+        const Password = consumerPassword;
+        await new Promise(resolve => setTimeout(resolve, 5000));
+        try {
+            await web3.eth.personal.unlockAccount(Account, Password);
+            console.log("成功解鎖帳戶");
+        } catch (error) {
+            console.error("解鎖帳戶出錯:", error);
+            throw error;
+        }
+        const ABI = JSON.parse(fs.readFileSync('./Order.abi', 'utf8'));
+        const SC = contractAddress;
+        const Contract = new web3.eth.Contract(ABI, SC);
+        const transactionReceipt = await Contract.methods.findDeliveryManOvertime(_id)
+            .send({ from: Account });
+        console.log(transactionReceipt);
+        if (transactionReceipt.status) {
+            console.log("更改尋找外送員超時狀態成功")
+            return true;
+        } else {
+            console.error("更改尋找外送員超時狀態失敗");
+            return false;
+        }
+    } catch {
+        console.error("更改尋找外送員超時狀態出錯", error);
+        throw error;
+    }
+}
+
+// 外送員收餐確認
+async function confirmPickUp(contractAddress, deliveryWallet, deliveryPassword, _id) { 
+    const Account = deliveryWallet;
+    const Password = deliveryPassword;
+    await new Promise(resolve => setTimeout(resolve, 5000));
+    try {
+        await web3.eth.personal.unlockAccount(Account, Password);
+        console.log("成功解鎖帳戶");
+    } catch (error) {
+        console.error("解鎖帳戶出錯:", error);
+        throw error;
+    }
+    const ABI = JSON.parse(fs.readFileSync('./Order.abi', 'utf8'));
+    const SC = contractAddress;
+    const Contract = new web3.eth.Contract(ABI, SC);
+    const transactionReceipt = await Contract.methods.confirmPickUp(_id)
+        .send({ from: Account });
+    console.log(transactionReceipt);
+    if (transactionReceipt.status) {
+        console.log("外送員收餐確認成功")
+        return true;
+    } else {
+        console.error("外送員收餐確認失敗");
+        return false;
+    }
+}
+
+// 外送員已送達
+async function confirmDelivery(contractAddress, deliveryWallet, deliveryPassword, _id) {
+    const Account = deliveryWallet;
+    const Password = deliveryPassword;
+    await new Promise(resolve => setTimeout(resolve, 5000));
+    try {
+        await web3.eth.personal.unlockAccount(Account, Password);
+        console.log("成功解鎖帳戶");
+    } catch (error) {
+        console.error("解鎖帳戶出錯:", error);
+        throw error;
+    }
+    const ABI = JSON.parse(fs.readFileSync('./Order.abi', 'utf8'));
+    const SC = contractAddress;
+    const Contract = new web3.eth.Contract(ABI, SC);
+    const transactionReceipt = await Contract.methods.confirmDelivery(_id)
+        .send({ from: Account });
+    console.log(transactionReceipt);
+    if (transactionReceipt.status) {
+        console.log("外送員已送達成功")
+        return true;
+    } else {
+        console.error("外送員已送達失敗");
+        return false;
+    }
+}
+
+
+export { createAccount, getBalance, deploy, contractCreateOrder, contractPushOrderContent, contractStoreAcceptOrder, contractDeliveryAcceptOrder, deploySignUp, signUpAddContract, signUpGetContract, signUpCheck, contractGetStore, contractSetStore, contractGetClosedStatus, contractSetClosedStatus, contractMenuUpdate, contractGetMenuVersion, contractGetMenu, contractGetOrderContent, contractStoreOvertime, contractFindDeliveryManOvertime, confirmPickUp, confirmDelivery };
