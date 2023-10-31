@@ -250,7 +250,7 @@ app.post("/contract/deliveryAcceptOrder", async (req, res) => {
     }
 })
 
-// 設定店家超時
+// 店家回應超時
 app.post("/contract/storeOvertime", async (req, res) => {
     try {
         console.log(req.body);
