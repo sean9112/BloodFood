@@ -1,7 +1,7 @@
 import Web3 from "web3";
 import fs from "fs";
 
-const etherBaseAccount = "0xccd2ada5a9bbb08ec956651cbb21cc2a6171c8eb"
+const etherBaseAccount = "0xbedd39b93dc7d8c21234302bb3719b1ea5cfef12"
 
 // 外部 Function
 
@@ -217,7 +217,7 @@ async function signUpCheck(signUpContract, storeWallet, storePassword, _contract
 // 訂單合約
 
 // 部署合約
-async function deploy(storePassword, _storeName, _storeAddress, _storePhone, _storeWallet, _storeTag, _latitudeAndLongitude, _menuLink) {
+async function deploy(storePassword, _storeName, _storeAddress, _storePhone, _storeWallet, _storeTag, _latitudeAndLongitude, _menuLink, _storeEmail) {
     console.log("開始部署合約...");
     const Account = _storeWallet;
     const Password = storePassword
@@ -245,7 +245,8 @@ async function deploy(storePassword, _storeName, _storeAddress, _storePhone, _st
                 web3.utils.toChecksumAddress(_storeWallet),
                 _storeTag,
                 _latitudeAndLongitude,
-                _menuLink
+                _menuLink,
+                _storeEmail
             ]
         }).send({
             from: Account,
@@ -283,7 +284,7 @@ async function contractGetStore(contractAddress, wallet) {
 }
 
 // 更改店家資訊
-async function contractSetStore(contractAddress, storePassword, _storeName, _storeAddress, _storePhone, _storeWallet, _storeTag, _latitudeAndLongitude) {
+async function contractSetStore(contractAddress, storePassword, _storeName, _storeAddress, _storePhone, _storeWallet, _storeTag, _latitudeAndLongitude, _storeEmail) {
     try {
         const Account = _storeWallet;
         const Password = storePassword;
@@ -299,7 +300,7 @@ async function contractSetStore(contractAddress, storePassword, _storeName, _sto
         const SC = contractAddress;
         const Contract = new web3.eth.Contract(ABI, SC);
 
-        const transactionReceipt = await Contract.methods.setStore(_storeName, _storeAddress, _storePhone, _storeWallet, _storeTag, _latitudeAndLongitude)
+        const transactionReceipt = await Contract.methods.setStore(_storeName, _storeAddress, _storePhone, _storeWallet, _storeTag, _latitudeAndLongitude, _storeEmail)
             .send({ from: Account });
 
         console.log(transactionReceipt);
@@ -445,7 +446,7 @@ async function contractGetMenu(contractAddress, wallet, _menuVersion) {
 }
 
 // 建立訂單
-async function contractCreateOrder(contractAddress, consumerPassword, _consumerName, _consumerAddress, _consumerPhone, _consumerWallet, _fee, _note, _foodCost) {
+async function contractCreateOrder(contractAddress, consumerPassword, _consumerName, _consumerAddress, _consumerPhone, _consumerWallet, _fee, _note, _foodCost, _consumerEmail) {
     try {
         const Account = _consumerWallet;
         const Password = consumerPassword;
@@ -461,7 +462,7 @@ async function contractCreateOrder(contractAddress, consumerPassword, _consumerN
         const SC = contractAddress;
         const Contract = new web3.eth.Contract(ABI, SC);
 
-        const transactionReceipt = await Contract.methods.createOrder(_consumerName, _consumerAddress, _consumerPhone, _consumerWallet, _fee, _note, _foodCost)
+        const transactionReceipt = await Contract.methods.createOrder(_consumerName, _consumerAddress, _consumerPhone, _consumerWallet, _fee, _note, _foodCost, _consumerEmail)
             .send({ from: Account });
         console.log(transactionReceipt);
         const _ID = transactionReceipt.events.Status.returnValues[0];
@@ -561,7 +562,7 @@ async function contractStoreAcceptOrder(contractAddress, storeWallet, storePassw
 }
 
 // 寫入外送員資訊
-async function contractDeliveryAcceptOrder(contractAddress, _id, _deliveryName, _deliveryPhone, _deliveryWallet, deliveryPassword) {
+async function contractDeliveryAcceptOrder(contractAddress, _id, _deliveryName, _deliveryPhone, _deliveryWallet, deliveryPassword, _deliveryEmail) {
     try {
         const Account = _deliveryWallet;
         const Password = deliveryPassword;
@@ -577,7 +578,7 @@ async function contractDeliveryAcceptOrder(contractAddress, _id, _deliveryName, 
         const SC = contractAddress;
         const Contract = new web3.eth.Contract(ABI, SC);
 
-        const transactionReceipt = await Contract.methods.deliveryAcceptOrder(_id, _deliveryName, _deliveryPhone, _deliveryWallet)
+        const transactionReceipt = await Contract.methods.deliveryAcceptOrder(_id, _deliveryName, _deliveryPhone, _deliveryWallet, _deliveryEmail)
             .send({ from: Account });
         console.log(transactionReceipt);
         if (transactionReceipt.status) {
@@ -624,11 +625,11 @@ async function contractStoreOvertime(contractAddress, storeWallet, storePassword
         console.error("更改店家超時狀態出錯", error);
         throw error;
     }
-    
+
 }
 
 // 尋找外送員超時
-async function contractFindDeliveryManOvertime(contractAddress, consumerWallet, consumerPassword, _id) { 
+async function contractFindDeliveryManOvertime(contractAddress, consumerWallet, consumerPassword, _id) {
     try {
         const Account = consumerWallet;
         const Password = consumerPassword;
@@ -660,7 +661,7 @@ async function contractFindDeliveryManOvertime(contractAddress, consumerWallet, 
 }
 
 // 外送員收餐確認
-async function confirmPickUp(contractAddress, deliveryWallet, deliveryPassword, _id) { 
+async function confirmPickUp(contractAddress, deliveryWallet, deliveryPassword, _id) {
     const Account = deliveryWallet;
     const Password = deliveryPassword;
     await new Promise(resolve => setTimeout(resolve, 5000));
@@ -713,5 +714,32 @@ async function confirmDelivery(contractAddress, deliveryWallet, deliveryPassword
     }
 }
 
+// 消費者確認簽收
+async function confirmReceipt(contractAddress, consumerWallet, consumerPassword, _id, cost) {
+    const Account = consumerWallet;
+    const Password = consumerPassword;
+    await new Promise(resolve => setTimeout(resolve, 5000));
+    try {
+        await web3.eth.personal.unlockAccount(Account, Password);
+        console.log("成功解鎖帳戶");
+    } catch (error) {
+        console.error("解鎖帳戶出錯:", error);
+        throw error;
+    }
+    const ABI = JSON.parse(fs.readFileSync('./Order.abi', 'utf8'));
+    const SC = contractAddress;
+    const Contract = new web3.eth.Contract(ABI, SC);
+    const transactionReceipt = await Contract.methods.confirmReceipt(_id)
+        .send({ from: Account, gas: 3000000, value: cost });
+    console.log(transactionReceipt);
+    if (transactionReceipt.status) {
+        console.log("消費者確認簽收成功")
+        return true;
+    } else {
+        console.error("消費者確認簽收失敗");
+        return false;
+    }
+}
 
-export { createAccount, getBalance, deploy, contractCreateOrder, contractPushOrderContent, contractStoreAcceptOrder, contractDeliveryAcceptOrder, deploySignUp, signUpAddContract, signUpGetContract, signUpCheck, contractGetStore, contractSetStore, contractGetClosedStatus, contractSetClosedStatus, contractMenuUpdate, contractGetMenuVersion, contractGetMenu, contractGetOrderContent, contractStoreOvertime, contractFindDeliveryManOvertime, confirmPickUp, confirmDelivery };
+
+export { createAccount, getBalance, deploy, contractCreateOrder, contractPushOrderContent, contractStoreAcceptOrder, contractDeliveryAcceptOrder, deploySignUp, signUpAddContract, signUpGetContract, signUpCheck, contractGetStore, contractSetStore, contractGetClosedStatus, contractSetClosedStatus, contractMenuUpdate, contractGetMenuVersion, contractGetMenu, contractGetOrderContent, contractStoreOvertime, contractFindDeliveryManOvertime, confirmPickUp, confirmDelivery, confirmReceipt };

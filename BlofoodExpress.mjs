@@ -1,4 +1,4 @@
-import { createAccount, getBalance, deploy, contractCreateOrder, contractPushOrderContent, contractStoreAcceptOrder, contractDeliveryAcceptOrder, deploySignUp, signUpAddContract, signUpGetContract, signUpCheck, contractGetStore, contractSetStore, contractGetClosedStatus, contractSetClosedStatus, contractMenuUpdate, contractGetMenuVersion, contractGetMenu, contractGetOrderContent, contractStoreOvertime, contractFindDeliveryManOvertime, confirmPickUp, confirmDelivery } from "./BlofoodWeb3.mjs";
+import { createAccount, getBalance, deploy, contractCreateOrder, contractPushOrderContent, contractStoreAcceptOrder, contractDeliveryAcceptOrder, deploySignUp, signUpAddContract, signUpGetContract, signUpCheck, contractGetStore, contractSetStore, contractGetClosedStatus, contractSetClosedStatus, contractMenuUpdate, contractGetMenuVersion, contractGetMenu, contractGetOrderContent, contractStoreOvertime, contractFindDeliveryManOvertime, confirmPickUp, confirmDelivery, confirmReceipt } from "./BlofoodWeb3.mjs";
 import express from "express";
 import bodyParser from 'body-parser';
 const app = express();
@@ -83,8 +83,8 @@ app.post("/signUp/check", async (req, res) => {
 app.post("/deploy", async (req, res) => {
     try {
         console.log(req.body);
-        let { storePassword, storeName, storeAddress, storePhone, storeWallet, storeTag, latitudeAndLongitude, menuLink } = req.body;
-        let contractAddress = await deploy(storePassword, storeName, storeAddress, storePhone, storeWallet, storeTag, latitudeAndLongitude, menuLink);
+        let { storePassword, storeName, storeAddress, storePhone, storeWallet, storeTag, latitudeAndLongitude, menuLink, storeEmail } = req.body;
+        let contractAddress = await deploy(storePassword, storeName, storeAddress, storePhone, storeWallet, storeTag, latitudeAndLongitude, menuLink, storeEmail);
         let _status = await signUpAddContract(signUpContract, storeWallet, storePassword, contractAddress);
         res.status(200).json({ contractAddress: contractAddress, addContractStatus: _status });
     } catch (error) {
@@ -101,7 +101,7 @@ app.post("/contract/getStore", async (req, res) => {
         console.log(req.body);
         let { contractAddress, wallet } = req.body;
         let result = await contractGetStore(contractAddress, wallet);
-        res.status(200).json({ storeName: result['0'], storeAddress: result['1'], storePhone: result['2'], storeWallet: result['3'], currentID: result['4'], storeTag: result['5'], latitudeAndLongitude: result['6'], menuLink: result['7'] })
+        res.status(200).json({ storeName: result['0'], storeAddress: result['1'], storePhone: result['2'], storeWallet: result['3'], currentID: result['4'], storeTag: result['5'], latitudeAndLongitude: result['6'], menuLink: result['7'], storeEmail: result['8'] })
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Internal Server Error' });
@@ -112,8 +112,8 @@ app.post("/contract/getStore", async (req, res) => {
 app.post("/contract/setStore", async (req, res) => {
     try {
         console.log(req.body);
-        let { contractAddress, storePassword, storeName, storeAddress, storePhone, storeWallet, storeTag, latitudeAndLongitude } = req.body;
-        let _status = await contractSetStore(contractAddress, storePassword, storeName, storeAddress, storePhone, storeWallet, storeTag, latitudeAndLongitude);
+        let { contractAddress, storePassword, storeName, storeAddress, storePhone, storeWallet, storeTag, latitudeAndLongitude, storeEmail } = req.body;
+        let _status = await contractSetStore(contractAddress, storePassword, storeName, storeAddress, storePhone, storeWallet, storeTag, latitudeAndLongitude, storeEmail);
         res.status(200).json({ status: _status });
     } catch (error) {
         console.error(error);
@@ -190,8 +190,8 @@ app.post("/contract/getMenu", async (req, res) => {
 app.post("/contract/createOrder", async (req, res) => {
     try {
         console.log(req.body);
-        let { contractAddress, consumerPassword, consumerName, consumerAddress, consumerPhone, consumerWallet, fee, note, foodCost } = req.body;
-        let _id = await contractCreateOrder(contractAddress, consumerPassword, consumerName, consumerAddress, consumerPhone, consumerWallet, fee, note, foodCost);
+        let { contractAddress, consumerPassword, consumerName, consumerAddress, consumerPhone, consumerWallet, fee, note, foodCost, consumerEmail } = req.body;
+        let _id = await contractCreateOrder(contractAddress, consumerPassword, consumerName, consumerAddress, consumerPhone, consumerWallet, fee, note, foodCost, consumerEmail);
         res.status(200).json({ id: _id });
     } catch (error) {
         console.error(error);
@@ -241,8 +241,8 @@ app.post("/contract/storeAcceptOrder", async (req, res) => {
 app.post("/contract/deliveryAcceptOrder", async (req, res) => {
     try {
         console.log(req.body);
-        let { contractAddress, id, deliveryName, deliveryPhone, deliveryWallet, deliveryPassword } = req.body;
-        let status = await contractDeliveryAcceptOrder(contractAddress, id, deliveryName, deliveryPhone, deliveryWallet, deliveryPassword);
+        let { contractAddress, id, deliveryName, deliveryPhone, deliveryWallet, deliveryPassword, deliveryEmail } = req.body;
+        let status = await contractDeliveryAcceptOrder(contractAddress, id, deliveryName, deliveryPhone, deliveryWallet, deliveryPassword, deliveryEmail);
         res.status(200).json({ status: status });
     } catch (error) {
         console.error(error);
@@ -266,7 +266,7 @@ app.post("/contract/storeOvertime", async (req, res) => {
 app.post("/contract/findDeliveryManOvertime", async (req, res) => {
     try {
         console.log(req.body);
-        let { contractAddress, consumerWallet,consumerPassword, id } = req.body;
+        let { contractAddress, consumerWallet, consumerPassword, id } = req.body;
         let status = await contractFindDeliveryManOvertime(contractAddress, consumerWallet, consumerPassword, id);
         res.status(200).json({ status: status });
     } catch (error) {
@@ -292,6 +292,18 @@ app.post("/contract/confirmDelivery", async (req, res) => {
         console.log(req.body);
         let { contractAddress, deliveryWallet, deliveryPassword, id } = req.body;
         let status = await confirmDelivery(contractAddress, deliveryWallet, deliveryPassword, id);
+        res.status(200).json({ status: status });
+    } catch (error) {
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+})
+
+// 消費者確認簽收
+app.post("/contract/confirmReceipt", async (req, res) => {
+    try {
+        console.log(req.body);
+        let { contractAddress, consumerWallet, consumerPassword, id, cost } = req.body;
+        let status = await confirmReceipt(contractAddress, consumerWallet, consumerPassword, id, cost);
         res.status(200).json({ status: status });
     } catch (error) {
         res.status(500).json({ error: 'Internal Server Error' });

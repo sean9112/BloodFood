@@ -13,6 +13,7 @@ contract Order {
     string public storeTag;
     string public latitudeAndLongitude; // 店家經緯度
     uint public menuVersion;
+    string public storeEmail;
 
     bool public closedStatus;
 
@@ -27,7 +28,8 @@ contract Order {
         address payable _storeWallet,
         string memory _storeTag,
         string memory _latitudeAndLongitude,
-        string memory _menuLink
+        string memory _menuLink,
+        string memory _storeEmail
     ) {
         // 建立合約時寫入店家資訊
         storeName = _storeName;
@@ -37,6 +39,7 @@ contract Order {
         storeTag = _storeTag;
         latitudeAndLongitude = _latitudeAndLongitude;
         menuLink[0] = _menuLink;
+        storeEmail = _storeEmail;
     }
 
     // 店家資訊
@@ -52,6 +55,7 @@ contract Order {
             uint,
             string memory,
             string memory,
+            string memory,
             string memory
         )
     {
@@ -64,7 +68,8 @@ contract Order {
             currentID,
             storeTag,
             latitudeAndLongitude,
-            menuLink[menuVersion]
+            menuLink[menuVersion],
+            storeEmail
         );
     }
 
@@ -74,7 +79,8 @@ contract Order {
         string memory _storePhone,
         address payable _storeWallet,
         string memory _storeTag,
-        string memory _latitudeAndLongitude
+        string memory _latitudeAndLongitude,
+        string memory _storeEmail
     ) public {
         // 更改店家資訊
         storeName = _storeName;
@@ -83,6 +89,7 @@ contract Order {
         storeWallet = _storeWallet;
         storeTag = _storeTag;
         latitudeAndLongitude = _latitudeAndLongitude;
+        storeEmail = _storeEmail;
     }
 
     function getClosedStatus() public view returns (bool) {
@@ -151,6 +158,7 @@ contract Order {
         string Address;
         string Phone;
         address payable Wallet;
+        string Email;
     }
 
     struct Delivery {
@@ -158,6 +166,7 @@ contract Order {
         string Name;
         string Phone;
         address payable Wallet;
+        string Email;
     }
 
     struct OrderStruct {
@@ -184,7 +193,8 @@ contract Order {
         address payable _consumerWallet,
         uint _fee,
         string memory _note,
-        uint _foodCost
+        uint _foodCost,
+        string memory _consumerEmail
     ) public {
         OrderStruct memory newOrder; // 宣告新結構
         newOrder.orderID = currentID; // 寫入這則訂單的單號
@@ -192,6 +202,7 @@ contract Order {
         newOrder.consumer.Address = _consumerAddress;
         newOrder.consumer.Phone = _consumerPhone;
         newOrder.consumer.Wallet = _consumerWallet;
+        newOrder.consumer.Email = _consumerEmail;
         newOrder.fee = _fee;
         newOrder.note = _note;
         newOrder.foodCost = _foodCost;
@@ -239,12 +250,14 @@ contract Order {
         uint _id,
         string memory _deliveryName,
         string memory _deliveryPhone,
-        address payable _deliveryWallet
+        address payable _deliveryWallet,
+        string memory _deliveryEmail
     ) public {
         // 寫入外送員資訊
         orders[_id].delivery.Name = _deliveryName;
         orders[_id].delivery.Phone = _deliveryPhone;
         orders[_id].delivery.Wallet = _deliveryWallet;
+        orders[_id].delivery.Email = _deliveryEmail;
         orders[_id].orderStatus = OrderStatus.StorePreparing;
         emit Status(_id, 2);
     }
