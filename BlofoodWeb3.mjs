@@ -741,5 +741,42 @@ async function confirmReceipt(contractAddress, consumerWallet, consumerPassword,
     }
 }
 
+// 回傳訂單全部訂單狀態
+async function contractGetOrder(contractAddress, wallet, _id) {
+    try {
+        const Account = wallet;
+        await new Promise(resolve => setTimeout(resolve, 5000));
 
-export { createAccount, getBalance, deploy, contractCreateOrder, contractPushOrderContent, contractStoreAcceptOrder, contractDeliveryAcceptOrder, deploySignUp, signUpAddContract, signUpGetContract, signUpCheck, contractGetStore, contractSetStore, contractGetClosedStatus, contractSetClosedStatus, contractMenuUpdate, contractGetMenuVersion, contractGetMenu, contractGetOrderContent, contractStoreOvertime, contractFindDeliveryManOvertime, confirmPickUp, confirmDelivery, confirmReceipt };
+        const ABI = JSON.parse(fs.readFileSync('./Order.abi', 'utf8'));
+        const SC = contractAddress;
+        const Contract = new web3.eth.Contract(ABI, SC);
+        let _result = await Contract.methods.getOrder(_id).call({ from: Account });
+        console.log("result:", _result);
+        return _result;
+    } catch (error) {
+        console.error("回傳訂單全部訂單狀態出錯", error);
+        throw error;
+    }
+}
+
+
+// 回傳部分訂單狀態
+async function contractGetOrderStatus(contractAddress, wallet, _id) {
+    try {
+        const Account = wallet;
+        await new Promise(resolve => setTimeout(resolve, 5000));
+
+        const ABI = JSON.parse(fs.readFileSync('./Order.abi', 'utf8'));
+        const SC = contractAddress;
+        const Contract = new web3.eth.Contract(ABI, SC);
+        let _result = await Contract.methods.getOrderStatus(_id).call({ from: Account });
+        console.log("result:", _result);
+        return _result;
+    } catch (error) {
+        console.error("回傳部分訂單狀態出錯", error);
+        throw error;
+    }
+}
+
+
+export { createAccount, getBalance, deploy, contractCreateOrder, contractPushOrderContent, contractStoreAcceptOrder, contractDeliveryAcceptOrder, deploySignUp, signUpAddContract, signUpGetContract, signUpCheck, contractGetStore, contractSetStore, contractGetClosedStatus, contractSetClosedStatus, contractMenuUpdate, contractGetMenuVersion, contractGetMenu, contractGetOrderContent, contractStoreOvertime, contractFindDeliveryManOvertime, confirmPickUp, confirmDelivery, confirmReceipt, contractGetOrder, contractGetOrderStatus };

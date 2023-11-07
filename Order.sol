@@ -300,12 +300,12 @@ contract Order {
     }
 
     // 狀態 function
-    function firstGetOrder(uint _id) public view returns (OrderStruct memory) {
+    function getOrder(uint _id) public view returns (OrderStruct memory) {
         // 回傳訂單全部訂單狀態
         return orders[_id];
     }
 
-    function getOrder(
+    function getOrderStatus(
         uint _id
     ) public view returns (bool, OrderStatus, string memory, bool, bool) {
         // 回傳部分訂單狀態
