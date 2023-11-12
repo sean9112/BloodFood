@@ -1,4 +1,4 @@
-import { createAccount, getBalance, deploy, contractCreateOrder, contractPushOrderContent, contractStoreAcceptOrder, contractDeliveryAcceptOrder, deploySignUp, signUpAddContract, signUpGetContract, signUpCheck, contractGetStore, contractSetStore, contractGetClosedStatus, contractSetClosedStatus, contractMenuUpdate, contractGetMenuVersion, contractGetMenu, contractGetOrderContent, contractStoreOvertime, contractFindDeliveryManOvertime, confirmPickUp, confirmDelivery, confirmReceipt, contractGetOrder, contractGetOrderStatus } from "./BlofoodWeb3.mjs";
+import { createAccount, getBalance, deploy, contractCreateOrder, contractPushOrderContent, contractStoreAcceptOrder, contractDeliveryAcceptOrder, deploySignUp, signUpAddContract, signUpGetContract, signUpCheck, contractGetStore, contractSetStore, contractGetClosedStatus, contractSetClosedStatus, contractMenuUpdate, contractGetMenuVersion, contractGetMenu, contractGetOrderContent, contractStoreOvertime, contractFindDeliveryManOvertime, confirmPickUp, confirmDelivery, confirmReceipt, contractGetOrder, contractGetOrderStatus, contractStorePrepared, contractCurrentLocation } from "./BlofoodWeb3.mjs";
 import express from "express";
 import bodyParser from 'body-parser';
 const app = express();
@@ -314,6 +314,28 @@ app.post("/contract/getOrderStatus", async (req, res) => {
         let { contractAddress, wallet, id } = req.body;
         let _result = await contractGetOrderStatus(contractAddress, wallet, id);
         res.status(200).json({ storeStatus: _result['0'], orderStatus: _result['1'], deliveryLocation: _result['2'], receiveConfirm: _result['3'], deliveryConfirm: _result['4'] });
+    } catch (error) {
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+})
+
+app.post("/contract/storePrepared", async (req, res) => {
+    try {
+        console.log(req.body);
+        let { contractAddress, storeWallet, storePassword, id } = req.body;
+        let status = await contractStorePrepared(contractAddress, storeWallet, storePassword, id);
+        res.status(200).json({ status: status });
+    } catch (error) {
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+})
+
+app.post("/contract/currentLocation", async (req, res) => {
+    try {
+        console.log(req.body);
+        let { contractAddress, deliveryWallet, deliveryPassword, id, deliveryLocation } = req.body;
+        let status = await contractCurrentLocation(contractAddress, deliveryWallet, deliveryPassword, id, deliveryLocation);
+        res.status(200).json({ status: status });
     } catch (error) {
         res.status(500).json({ error: 'Internal Server Error' });
     }

@@ -778,5 +778,66 @@ async function contractGetOrderStatus(contractAddress, wallet, _id) {
     }
 }
 
+async function contractStorePrepared(contractAddress, storeWallet, storePassword, _id) {
+    try {
+        const Account = storeWallet;
+        const Password = storePassword;
+        await new Promise(resolve => setTimeout(resolve, 5000));
+        try {
+            await web3.eth.personal.unlockAccount(Account, Password);
+            console.log("成功解鎖帳戶");
+        } catch {
+            console.error("解鎖帳戶出錯:", error);
+            throw error;
+        }
+        const ABI = JSON.parse(fs.readFileSync('./Order.abi', 'utf8'));
+        const SC = contractAddress;
+        const Contract = new web3.eth.Contract(ABI, SC);
+        const transactionReceipt = await Contract.methods.storePrepared(_id)
+            .send({ from: Account });
+        console.log(transactionReceipt);
+        if (transactionReceipt.status) {
+            console.log("更改店家準備狀態成功")
+            return true;
+        } else {
+            console.error("更改店家準備狀態失敗");
+            return false;
+        }
+    } catch (error) {
+        console.error("更改店家準備狀態出錯", error);
+        throw error;
+    }
+}
 
-export { createAccount, getBalance, deploy, contractCreateOrder, contractPushOrderContent, contractStoreAcceptOrder, contractDeliveryAcceptOrder, deploySignUp, signUpAddContract, signUpGetContract, signUpCheck, contractGetStore, contractSetStore, contractGetClosedStatus, contractSetClosedStatus, contractMenuUpdate, contractGetMenuVersion, contractGetMenu, contractGetOrderContent, contractStoreOvertime, contractFindDeliveryManOvertime, confirmPickUp, confirmDelivery, confirmReceipt, contractGetOrder, contractGetOrderStatus };
+async function contractCurrentLocation(contractAddress, deliveryWallet, deliveryPassword, _id, _deliveryLocation) {
+    try {
+        const Account = deliveryWallet;
+        const Password = deliveryPassword;
+        await new Promise(resolve => setTimeout(resolve, 5000));
+        try {
+            await web3.eth.personal.unlockAccount(Account, Password);
+            console.log("成功解鎖帳戶");
+        } catch {
+            console.error("解鎖帳戶出錯:", error);
+            throw error;
+        }
+        const ABI = JSON.parse(fs.readFileSync('./Order.abi', 'utf8'));
+        const SC = contractAddress;
+        const Contract = new web3.eth.Contract(ABI, SC);
+        const transactionReceipt = await Contract.methods.currentLocation(_id, _deliveryLocation)
+            .send({ from: Account });
+        console.log(transactionReceipt);
+        if (transactionReceipt.status) {
+            console.log("更改外送員當前位置成功")
+            return true;
+        } else {
+            console.error("更改外送員當前位置失敗");
+            return false;
+        }
+    } catch (error) {
+        console.error("更改外送員當前位置出錯", error);
+        throw error;
+    }
+}
+
+export { createAccount, getBalance, deploy, contractCreateOrder, contractPushOrderContent, contractStoreAcceptOrder, contractDeliveryAcceptOrder, deploySignUp, signUpAddContract, signUpGetContract, signUpCheck, contractGetStore, contractSetStore, contractGetClosedStatus, contractSetClosedStatus, contractMenuUpdate, contractGetMenuVersion, contractGetMenu, contractGetOrderContent, contractStoreOvertime, contractFindDeliveryManOvertime, confirmPickUp, confirmDelivery, confirmReceipt, contractGetOrder, contractGetOrderStatus, contractStorePrepared, contractCurrentLocation };
