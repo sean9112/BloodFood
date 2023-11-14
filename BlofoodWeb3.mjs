@@ -840,4 +840,112 @@ async function contractCurrentLocation(contractAddress, deliveryWallet, delivery
     }
 }
 
-export { createAccount, getBalance, deploy, contractCreateOrder, contractPushOrderContent, contractStoreAcceptOrder, contractDeliveryAcceptOrder, deploySignUp, signUpAddContract, signUpGetContract, signUpCheck, contractGetStore, contractSetStore, contractGetClosedStatus, contractSetClosedStatus, contractMenuUpdate, contractGetMenuVersion, contractGetMenu, contractGetOrderContent, contractStoreOvertime, contractFindDeliveryManOvertime, confirmPickUp, confirmDelivery, confirmReceipt, contractGetOrder, contractGetOrderStatus, contractStorePrepared, contractCurrentLocation };
+async function contractStoreUndone(contractAddress, storeWallet, storePassword, _id, cost) {
+    try {
+        const Account = storeWallet;
+        const Password = storePassword;
+        await new Promise(resolve => setTimeout(resolve, 5000));
+        try {
+            await web3.eth.personal.unlockAccount(Account, Password)
+            console.log("成功解鎖帳戶");
+        } catch {
+            console.error("解鎖帳戶出錯:", error);
+            throw error;
+        }
+        const ABI = JSON.parse(fs.readFileSync('./Order.abi', 'utf8'));
+        const SC = contractAddress;
+        const Contract = new web3.eth.Contract(ABI, SC);
+        const transactionReceipt = await Contract.methods.storeUndone(_id).send({ from: Account, gas: 3000000, value: cost });
+        console.log(transactionReceipt);
+        if (transactionReceipt.status) {
+            console.log("更改店家未完成狀態成功")
+            return true;
+        } else {
+            console.error("更改店家未完成狀態失敗");
+            return false;
+        }
+    } catch (error) {
+        console.error("更改店家未完成狀態出錯", error);
+        throw error;
+    }
+}
+
+async function contractDeliveryUndone(contractAddress, deliveryWallet, deliveryPassword, _id, cost) {
+    try {
+        const Account = deliveryWallet;
+        const Password = deliveryPassword;
+        await new Promise(resolve => setTimeout(resolve, 5000));
+        try {
+            await web3.eth.personal.unlockAccount(Account, Password)
+            console.log("成功解鎖帳戶");
+        } catch {
+            console.error("解鎖帳戶出錯:", error);
+            throw error;
+        }
+        const ABI = JSON.parse(fs.readFileSync('./Order.abi', 'utf8'));
+        const SC = contractAddress;
+        const Contract = new web3.eth.Contract(ABI, SC);
+        const transactionReceipt = await Contract.methods.deliveryUndone(_id).send({ from: Account, gas: 3000000, value: cost });
+        console.log(transactionReceipt);
+        if (transactionReceipt.status) {
+            console.log("更改外送員未完成狀態成功")
+            return true;
+        } else {
+            console.error("更改外送員未完成狀態失敗");
+            return false;
+        }
+    } catch (error) {
+        console.error("更改外送員未完成狀態出錯", error);
+        throw error;
+    }
+}
+
+async function contractGetMessage(contractAddress, wallet, _id) {
+    try {
+        const Account = wallet;
+        await new Promise(resolve => setTimeout(resolve, 5000));
+
+        const ABI = JSON.parse(fs.readFileSync('./Order.abi', 'utf8'));
+        const SC = contractAddress;
+        const Contract = new web3.eth.Contract(ABI, SC);
+        let _result = await Contract.methods.getMessage(_id).call({ from: Account });
+        console.log("result:", _result);
+        return _result;
+    } catch (error) {
+        console.error("回傳訊息出錯", error);
+        throw error;
+    }
+}
+
+async function contractSendMessage(contractAddress, wallet, password, _id, _sender, _receiver, _messageContent) {
+    try {
+        const Account = wallet;
+        const Password = password;
+        await new Promise(resolve => setTimeout(resolve, 5000));
+        try {
+            await web3.eth.personal.unlockAccount(Account, Password)
+            console.log("成功解鎖帳戶");
+        } catch {
+            console.error("解鎖帳戶出錯:", error);
+            throw error;
+        }
+        const ABI = JSON.parse(fs.readFileSync('./Order.abi', 'utf8'));
+        const SC = contractAddress;
+        const Contract = new web3.eth.Contract(ABI, SC);
+        const transactionReceipt = await Contract.methods.sendMessage(_id, _sender, _receiver, _messageContent).send({ from: Account });
+        console.log(transactionReceipt);
+        if (transactionReceipt.status) {
+            console.log("寫入訊息成功")
+            return true;
+        } else {
+            console.error("寫入訊息失敗");
+            return false;
+        }
+    } catch (error) {
+        console.error("寫入訊息出錯", error);
+        throw error;
+    }
+}
+
+
+export { createAccount, getBalance, deploy, contractCreateOrder, contractPushOrderContent, contractStoreAcceptOrder, contractDeliveryAcceptOrder, deploySignUp, signUpAddContract, signUpGetContract, signUpCheck, contractGetStore, contractSetStore, contractGetClosedStatus, contractSetClosedStatus, contractMenuUpdate, contractGetMenuVersion, contractGetMenu, contractGetOrderContent, contractStoreOvertime, contractFindDeliveryManOvertime, confirmPickUp, confirmDelivery, confirmReceipt, contractGetOrder, contractGetOrderStatus, contractStorePrepared, contractCurrentLocation, contractStoreUndone, contractDeliveryUndone, contractGetMessage, contractSendMessage };
