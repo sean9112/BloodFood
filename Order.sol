@@ -369,7 +369,7 @@ contract Order {
     }
 
     // 外送員查看
-    function availableOrder() public returns (bool) {
+    function checkAvailableOrder() public returns (bool) {
         // 查看是否有可接訂單
         uint i;
         for (i = nextOrderToCheck; i < currentID; i++) {
@@ -391,7 +391,13 @@ contract Order {
 
     function getAvailableOrder() public view returns (uint[] memory) {
         // 獲得可接訂單 ID
-        uint[] memory availableOrderID;
+        uint count = 0;
+        for (uint i = nextOrderToCheck; i < currentID; i++) {
+            if (orders[i].orderStatus == OrderStatus.FindDeliveryMan) {
+                count++;
+            }
+        }
+        uint[] memory availableOrderID = new uint[](count);
         uint j = 0;
         for (uint i = nextOrderToCheck; i < currentID; i++) {
             if (orders[i].orderStatus == OrderStatus.FindDeliveryMan) {

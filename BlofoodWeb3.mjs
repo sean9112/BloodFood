@@ -74,6 +74,40 @@ async function deploySignUp() {
     }
 }
 
+// 重置註冊合約
+async function signUpReset() {
+    try {
+        const Account = etherBaseAccount;
+        const Password = "0";
+        await new Promise(resolve => setTimeout(resolve, 5000));
+
+        try {
+            await web3.eth.personal.unlockAccount(Account, Password);
+            console.log("成功解鎖帳戶");
+        } catch (error) {
+            console.error("解鎖帳戶出錯:", error);
+            throw error;
+        }
+
+        const ABI = JSON.parse(fs.readFileSync('./SignUp.abi', 'utf8'));
+        const SC = '0x6ee9957aef5f4073c6af71441ec7962527c37671';
+        const Contract = new web3.eth.Contract(ABI, SC);
+
+        const transactionReceipt = await Contract.methods.reset().send({ from: Account });
+        console.log(transactionReceipt);
+        if (transactionReceipt.status) {
+            console.log("重置註冊合約成功")
+            return true;
+        } else {
+            console.error("重置註冊合約失敗");
+            return false;
+        }
+    } catch (error) {
+        console.error("重置註冊合約出錯:", error);
+        throw error;
+    }
+}
+
 // 註冊新合約
 async function signUpAddContract(signUpContract, _storeWallet, _storePassword, _contract) {
     try {
@@ -210,6 +244,20 @@ async function signUpCheck(signUpContract, storeWallet, storePassword, _contract
 
     } catch (error) {
         console.error("比對出錯", error);
+        return false;
+    }
+}
+
+// 使用者登入比對
+async function checkUser(wallet, password) {
+    try {
+        const Account = wallet;
+        const Password = password;
+        await web3.eth.personal.unlockAccount(Account, Password);
+        console.log("成功解鎖帳戶");
+        return true;
+    } catch (error) {
+        console.error("解鎖帳戶出錯:", error);
         return false;
     }
 }
@@ -947,5 +995,39 @@ async function contractSendMessage(contractAddress, wallet, password, _id, _send
     }
 }
 
+async function contractCheckAvailableOrder(contractAddress, wallet) {
+    try {
+        const Account = wallet;
+        await new Promise(resolve => setTimeout(resolve, 5000));
 
-export { createAccount, getBalance, deploy, contractCreateOrder, contractPushOrderContent, contractStoreAcceptOrder, contractDeliveryAcceptOrder, deploySignUp, signUpAddContract, signUpGetContract, signUpCheck, contractGetStore, contractSetStore, contractGetClosedStatus, contractSetClosedStatus, contractMenuUpdate, contractGetMenuVersion, contractGetMenu, contractGetOrderContent, contractStoreOvertime, contractFindDeliveryManOvertime, confirmPickUp, confirmDelivery, confirmReceipt, contractGetOrder, contractGetOrderStatus, contractStorePrepared, contractCurrentLocation, contractStoreUndone, contractDeliveryUndone, contractGetMessage, contractSendMessage };
+        const ABI = JSON.parse(fs.readFileSync('./Order.abi', 'utf8'));
+        const SC = contractAddress;
+        const Contract = new web3.eth.Contract(ABI, SC);
+        let _result = await Contract.methods.checkAvailableOrder().call({ from: Account });
+        console.log("result:", _result);
+        return _result;
+    } catch (error) {
+        console.error("回傳可接訂單狀態出錯", error);
+        throw error;
+    }
+}
+
+async function contractGetAvailableOrder(contractAddress, wallet) {
+    try {
+        const Account = wallet;
+        await new Promise(resolve => setTimeout(resolve, 5000));
+
+        const ABI = JSON.parse(fs.readFileSync('./Order.abi', 'utf8'));
+        const SC = contractAddress;
+        const Contract = new web3.eth.Contract(ABI, SC);
+        let _availableOrderID = await Contract.methods.getAvailableOrder().call({ from: Account });
+        console.log("availableOrderID:", _availableOrderID);
+        return _availableOrderID;
+    } catch (error) {
+        console.error("回傳可接訂單出錯", error);
+        throw error;
+    }
+}
+
+
+export { createAccount, getBalance, deploy, contractCreateOrder, contractPushOrderContent, contractStoreAcceptOrder, contractDeliveryAcceptOrder, deploySignUp, signUpAddContract, signUpGetContract, signUpCheck, contractGetStore, contractSetStore, contractGetClosedStatus, contractSetClosedStatus, contractMenuUpdate, contractGetMenuVersion, contractGetMenu, contractGetOrderContent, contractStoreOvertime, contractFindDeliveryManOvertime, confirmPickUp, confirmDelivery, confirmReceipt, contractGetOrder, contractGetOrderStatus, contractStorePrepared, contractCurrentLocation, contractStoreUndone, contractDeliveryUndone, contractGetMessage, contractSendMessage, contractCheckAvailableOrder, contractGetAvailableOrder, signUpReset, checkUser };

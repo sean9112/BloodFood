@@ -25,4 +25,9 @@ contract SignUp {
         }
         return false;
     }
+
+    function reset() public {
+        delete StoresContract;
+        count = 0;
+    }
 }
