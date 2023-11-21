@@ -479,7 +479,7 @@ app.post("/contract/setPreparationTime", async (req, res) => {
 });
 
 // 寫入外送員路線估計時間
-app.post("/setDeliveryTime", async (req, res) => {
+app.post("/contract/setDeliveryTime", async (req, res) => {
     try {
         console.log(req.body);
         let { contractAddress, consumerWallet, consumerPassword, id, deliveryTime } = req.body;
