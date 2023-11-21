@@ -151,7 +151,7 @@ contract Order {
     mapping(uint => MessageStruct[]) public messages; // 使用映射存儲訊息
     mapping(uint => OrderContentStruct[]) public orderContents; // 使用映射存儲餐點內容
     mapping(uint => uint) public currentMenuVersion;
-    mapping(uint => uint) public orderTime;
+    mapping(uint => TimeStruct) public time;
 
     struct Consumer {
         // 消費者資訊
@@ -171,6 +171,7 @@ contract Order {
     }
 
     struct TimeStruct {
+        uint orderTime;
         string preparationTime;
         string deliveryTime;
     }
@@ -188,13 +189,12 @@ contract Order {
         string deliveryLocation; // 外送員當前位置
         bool receiveConfirm; // 收餐確認
         bool deliveryConfirm; // 送達確認
-        TimeStruct time;
     }
 
     // 時間
     // 獲得訂單時間、店家準備時間以及外送員路線估計時間
-    function getTime(uint _id) public view returns (uint, TimeStruct memory) {
-        return (orderTime[_id], orders[_id].time);
+    function getTime(uint _id) public view returns (TimeStruct memory) {
+        return (time[_id]);
     }
 
     // 寫入店家準備時間
@@ -202,12 +202,12 @@ contract Order {
         uint _id,
         string memory _preparationTime
     ) public {
-        orders[_id].time.preparationTime = _preparationTime;
+        time[_id].preparationTime = _preparationTime;
     }
 
     // 寫入外送員路線估計時間
     function setDeliveryTime(uint _id, string memory _deliveryTime) public {
-        orders[_id].time.deliveryTime = _deliveryTime;
+        time[_id].deliveryTime = _deliveryTime;
     }
 
     // 點餐 function
@@ -237,7 +237,7 @@ contract Order {
         orders[newOrder.orderID] = newOrder; // 將訂單結構存入映射
         currentMenuVersion[newOrder.orderID] = menuVersion;
         currentID++;
-        orderTime[newOrder.orderID] = block.timestamp;
+        time[newOrder.orderID].orderTime = block.timestamp;
         emit Status(newOrder.orderID, "WaitForStore");
     }
 
