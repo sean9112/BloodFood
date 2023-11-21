@@ -826,6 +826,7 @@ async function contractGetOrderStatus(contractAddress, wallet, _id) {
     }
 }
 
+// 更改店家準備狀態
 async function contractStorePrepared(contractAddress, storeWallet, storePassword, _id) {
     try {
         const Account = storeWallet;
@@ -857,6 +858,7 @@ async function contractStorePrepared(contractAddress, storeWallet, storePassword
     }
 }
 
+// 更改外送員當前位置
 async function contractCurrentLocation(contractAddress, deliveryWallet, deliveryPassword, _id, _deliveryLocation) {
     try {
         const Account = deliveryWallet;
@@ -888,6 +890,7 @@ async function contractCurrentLocation(contractAddress, deliveryWallet, delivery
     }
 }
 
+// 店家未完成
 async function contractStoreUndone(contractAddress, storeWallet, storePassword, _id, cost) {
     try {
         const Account = storeWallet;
@@ -918,6 +921,7 @@ async function contractStoreUndone(contractAddress, storeWallet, storePassword, 
     }
 }
 
+// 外送員未完成
 async function contractDeliveryUndone(contractAddress, deliveryWallet, deliveryPassword, _id, cost) {
     try {
         const Account = deliveryWallet;
@@ -948,6 +952,7 @@ async function contractDeliveryUndone(contractAddress, deliveryWallet, deliveryP
     }
 }
 
+// 獲得訊息
 async function contractGetMessage(contractAddress, wallet, _id) {
     try {
         const Account = wallet;
@@ -965,6 +970,7 @@ async function contractGetMessage(contractAddress, wallet, _id) {
     }
 }
 
+// 傳送訊息
 async function contractSendMessage(contractAddress, wallet, password, _id, _sender, _receiver, _messageContent) {
     try {
         const Account = wallet;
@@ -995,6 +1001,7 @@ async function contractSendMessage(contractAddress, wallet, password, _id, _send
     }
 }
 
+// 回傳可接訂單狀態
 async function contractCheckAvailableOrder(contractAddress, wallet) {
     try {
         const Account = wallet;
@@ -1012,6 +1019,7 @@ async function contractCheckAvailableOrder(contractAddress, wallet) {
     }
 }
 
+// 回傳可接訂單id
 async function contractGetAvailableOrder(contractAddress, wallet) {
     try {
         const Account = wallet;
@@ -1029,5 +1037,116 @@ async function contractGetAvailableOrder(contractAddress, wallet) {
     }
 }
 
+// 獲得訂單時間、店家準備時間以及外送員路線估計時間
+async function contractGetTime(contractAddress, wallet, _id) {
+    try {
+        const Account = wallet;
+        await new Promise(resolve => setTimeout(resolve, 5000));
 
-export { createAccount, getBalance, deploy, contractCreateOrder, contractPushOrderContent, contractStoreAcceptOrder, contractDeliveryAcceptOrder, deploySignUp, signUpAddContract, signUpGetContract, signUpCheck, contractGetStore, contractSetStore, contractGetClosedStatus, contractSetClosedStatus, contractMenuUpdate, contractGetMenuVersion, contractGetMenu, contractGetOrderContent, contractStoreOvertime, contractFindDeliveryManOvertime, confirmPickUp, confirmDelivery, confirmReceipt, contractGetOrder, contractGetOrderStatus, contractStorePrepared, contractCurrentLocation, contractStoreUndone, contractDeliveryUndone, contractGetMessage, contractSendMessage, contractCheckAvailableOrder, contractGetAvailableOrder, signUpReset, checkUser };
+        const ABI = JSON.parse(fs.readFileSync('./Order.abi', 'utf8'));
+        const SC = contractAddress;
+        const Contract = new web3.eth.Contract(ABI, SC);
+        let _result = await Contract.methods.getTime(_id).call({ from: Account });
+        console.log("result:", _result);
+        return _result;
+    } catch (error) {
+        console.error("回傳訂單時間出錯", error);
+        throw error;
+    }
+}
+
+// 寫入店家準備時間
+async function contractSetPreparationTime(contractAddress, storeWallet, storePassword, _id, _preparationTime) {
+    try {
+        const Account = storeWallet;
+        const Password = storePassword;
+        await new Promise(resolve => setTimeout(resolve, 5000));
+        try {
+            await web3.eth.personal.unlockAccount(Account, Password)
+            console.log("成功解鎖帳戶");
+        } catch {
+            console.error("解鎖帳戶出錯:", error);
+            throw error;
+        }
+        const ABI = JSON.parse(fs.readFileSync('./Order.abi', 'utf8'));
+        const SC = contractAddress;
+        const Contract = new web3.eth.Contract(ABI, SC);
+        const transactionReceipt = await Contract.methods.setStoreTime(_id, _preparationTime).send({ from: Account });
+        console.log(transactionReceipt);
+        if (transactionReceipt.status) {
+            console.log("寫入店家準備時間成功")
+            return true;
+        } else {
+            console.error("寫入店家準備時間失敗");
+            return false;
+        }
+    } catch (error) {
+        console.error("寫入店家準備時間出錯", error);
+        throw error;
+    }
+}
+
+// 寫入外送員路線估計時間
+async function contractSetDeliveryTime(contractAddress, consumerWallet, consumerPassword, _id, _deliveryTime) {
+    try {
+        const Account = consumerWallet;
+        const Password = consumerPassword;
+        await new Promise(resolve => setTimeout(resolve, 5000));
+        try {
+            await web3.eth.personal.unlockAccount(Account, Password)
+            console.log("成功解鎖帳戶");
+        } catch {
+            console.error("解鎖帳戶出錯:", error);
+            throw error;
+        }
+        const ABI = JSON.parse(fs.readFileSync('./Order.abi', 'utf8'));
+        const SC = contractAddress;
+        const Contract = new web3.eth.Contract(ABI, SC);
+        const transactionReceipt = await Contract.methods.setDeliveryTime(_id, _deliveryTime).send({ from: Account });
+        console.log(transactionReceipt);
+        if (transactionReceipt.status) {
+            console.log("寫入外送員路線估計時間成功")
+            return true;
+        } else {
+            console.error("寫入外送員路線估計時間失敗");
+            return false;
+        }
+    } catch (error) {
+        console.error("寫入外送員路線估計時間出錯", error);
+        throw error;
+    }
+}
+
+// 取消訂單
+async function contractCancelOrder(contractAddress, consumerWallet, consumerPassword, _id) {
+    try {
+        const Account = consumerWallet;
+        const Password = consumerPassword;
+        await new Promise(resolve => setTimeout(resolve, 5000));
+        try {
+            await web3.eth.personal.unlockAccount(Account, Password)
+            console.log("成功解鎖帳戶");
+        } catch {
+            console.error("解鎖帳戶出錯:", error);
+            throw error;
+        }
+        const ABI = JSON.parse(fs.readFileSync('./Order.abi', 'utf8'));
+        const SC = contractAddress;
+        const Contract = new web3.eth.Contract(ABI, SC);
+        const transactionReceipt = await Contract.methods.cancelOrder(_id).send({ from: Account });
+        console.log(transactionReceipt);
+        if (transactionReceipt.status) {
+            console.log("取消訂單成功")
+            return true;
+        } else {
+            console.error("取消訂單失敗");
+            return false;
+        }
+    } catch (error) {
+        console.error("取消訂單出錯", error);
+        throw error;
+    }
+}
+
+
+export { createAccount, getBalance, deploy, contractCreateOrder, contractPushOrderContent, contractStoreAcceptOrder, contractDeliveryAcceptOrder, deploySignUp, signUpAddContract, signUpGetContract, signUpCheck, contractGetStore, contractSetStore, contractGetClosedStatus, contractSetClosedStatus, contractMenuUpdate, contractGetMenuVersion, contractGetMenu, contractGetOrderContent, contractStoreOvertime, contractFindDeliveryManOvertime, confirmPickUp, confirmDelivery, confirmReceipt, contractGetOrder, contractGetOrderStatus, contractStorePrepared, contractCurrentLocation, contractStoreUndone, contractDeliveryUndone, contractGetMessage, contractSendMessage, contractCheckAvailableOrder, contractGetAvailableOrder, signUpReset, checkUser, contractGetTime, contractSetPreparationTime, contractSetDeliveryTime, contractCancelOrder };

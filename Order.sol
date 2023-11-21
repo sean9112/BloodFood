@@ -2,7 +2,7 @@
 pragma solidity ^0.8.13;
 
 contract Order {
-    event Status(uint orderID, uint statusNum);
+    event Status(uint orderID, string status);
     event Message(uint orderID);
 
     string public storeName; // 店家資訊
@@ -130,7 +130,8 @@ contract Order {
         StoreOvertime,
         FindDeliveryManOvertime,
         StoreUndone,
-        DeliveryUndone
+        DeliveryUndone,
+        CancelOrder
     }
 
     struct MessageStruct {
@@ -169,6 +170,11 @@ contract Order {
         string Email;
     }
 
+    struct TimeStruct {
+        string preparationTime;
+        string deliveryTime;
+    }
+
     struct OrderStruct {
         uint orderID; // 訂單單號
         Consumer consumer; // 宣告消費者資訊結構
@@ -182,6 +188,26 @@ contract Order {
         string deliveryLocation; // 外送員當前位置
         bool receiveConfirm; // 收餐確認
         bool deliveryConfirm; // 送達確認
+        TimeStruct time;
+    }
+
+    // 時間
+    // 獲得訂單時間、店家準備時間以及外送員路線估計時間
+    function getTime(uint _id) public view returns (uint, TimeStruct memory) {
+        return (orderTime[_id], orders[_id].time);
+    }
+
+    // 寫入店家準備時間
+    function setPreparationTime(
+        uint _id,
+        string memory _preparationTime
+    ) public {
+        orders[_id].time.preparationTime = _preparationTime;
+    }
+
+    // 寫入外送員路線估計時間
+    function setDeliveryTime(uint _id, string memory _deliveryTime) public {
+        orders[_id].time.deliveryTime = _deliveryTime;
     }
 
     // 點餐 function
@@ -212,7 +238,7 @@ contract Order {
         currentMenuVersion[newOrder.orderID] = menuVersion;
         currentID++;
         orderTime[newOrder.orderID] = block.timestamp;
-        emit Status(newOrder.orderID, 0);
+        emit Status(newOrder.orderID, "WaitForStore");
     }
 
     function pushOrderContent(
@@ -237,13 +263,19 @@ contract Order {
         if (_storeAccept == false) {
             // 店家拒絕
             orders[_id].orderStatus = OrderStatus.StoreReject;
-            emit Status(_id, 7);
+            emit Status(_id, "Confirmed");
         } else if (_storeAccept == true) {
             // 店家接受
             orders[_id].storeAccept = _storeAccept;
             orders[_id].orderStatus = OrderStatus.FindDeliveryMan;
-            emit Status(_id, 1);
+            emit Status(_id, "FindDeliveryMan");
         }
+    }
+
+    function cancelOrder(uint _id) public {
+        // 取消訂單
+        orders[_id].orderStatus = OrderStatus.CancelOrder;
+        emit Status(_id, "CancelOrder");
     }
 
     function deliveryAcceptOrder(
@@ -259,20 +291,20 @@ contract Order {
         orders[_id].delivery.Wallet = _deliveryWallet;
         orders[_id].delivery.Email = _deliveryEmail;
         orders[_id].orderStatus = OrderStatus.StorePreparing;
-        emit Status(_id, 2);
+        emit Status(_id, "StorePreparing");
     }
 
     // 超時 function
     function storeOvertime(uint _id) public {
         // 店家回應超時
         orders[_id].orderStatus = OrderStatus.StoreOvertime;
-        emit Status(_id, 8);
+        emit Status(_id, "StoreOvertime");
     }
 
     function findDeliveryManOvertime(uint _id) public {
         // 尋找外送員超時
         orders[_id].orderStatus = OrderStatus.FindDeliveryManOvertime;
-        emit Status(_id, 9);
+        emit Status(_id, "FindDeliveryManOvertime");
     }
 
     // 確認 function
@@ -280,13 +312,13 @@ contract Order {
         // 外送員收餐確認
         orders[_id].orderStatus = OrderStatus.Delivering;
         orders[_id].receiveConfirm = true;
-        emit Status(_id, 4);
+        emit Status(_id, "Delivering");
     }
 
     function confirmDelivery(uint _id) public {
         // 外送員已送達
         orders[_id].orderStatus = OrderStatus.ToBeConfirmed;
-        emit Status(_id, 5);
+        emit Status(_id, "ToBeConfirmed");
     }
 
     function confirmReceipt(uint _id) public payable {
@@ -296,7 +328,7 @@ contract Order {
 
         orders[_id].orderStatus = OrderStatus.Confirmed;
         orders[_id].deliveryConfirm = true;
-        emit Status(_id, 6);
+        emit Status(_id, "Confirmed");
     }
 
     // 狀態 function
@@ -322,7 +354,7 @@ contract Order {
         // 店家已準備好餐點
         orders[_id].storeStatus = true;
         orders[_id].orderStatus = OrderStatus.DeliveryPicksUp;
-        emit Status(_id, 3);
+        emit Status(_id, "DeliveryPicksUp");
     }
 
     function currentLocation(uint _id, string memory _deliveryLocation) public {
@@ -335,14 +367,14 @@ contract Order {
         orders[_id].consumer.Wallet.transfer(orders[_id].fee); // 轉帳給消費者違約金
         orders[_id].delivery.Wallet.transfer(orders[_id].fee); // 轉帳給外送員違約金
         orders[_id].orderStatus = OrderStatus.StoreUndone;
-        emit Status(_id, 10);
+        emit Status(_id, "StoreUndone");
     }
 
     function deliveryUndone(uint _id) public {
         storeWallet.transfer(orders[_id].foodCost); // 轉帳給店家餐錢
         orders[_id].consumer.Wallet.transfer(orders[_id].fee); // 轉帳給消費者違約金
         orders[_id].orderStatus = OrderStatus.DeliveryUndone;
-        emit Status(_id, 11);
+        emit Status(_id, "DeliveryUndone");
     }
 
     // 訊息 function

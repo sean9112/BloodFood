@@ -1,4 +1,4 @@
-import { createAccount, getBalance, deploy, contractCreateOrder, contractPushOrderContent, contractStoreAcceptOrder, contractDeliveryAcceptOrder, deploySignUp, signUpAddContract, signUpGetContract, signUpCheck, contractGetStore, contractSetStore, contractGetClosedStatus, contractSetClosedStatus, contractMenuUpdate, contractGetMenuVersion, contractGetMenu, contractGetOrderContent, contractStoreOvertime, contractFindDeliveryManOvertime, confirmPickUp, confirmDelivery, confirmReceipt, contractGetOrder, contractGetOrderStatus, contractStorePrepared, contractCurrentLocation, contractStoreUndone, contractDeliveryUndone, contractGetMessage, contractSendMessage, contractCheckAvailableOrder, contractGetAvailableOrder, signUpReset, checkUser } from "./BlofoodWeb3.mjs";
+import { createAccount, getBalance, deploy, contractCreateOrder, contractPushOrderContent, contractStoreAcceptOrder, contractDeliveryAcceptOrder, deploySignUp, signUpAddContract, signUpGetContract, signUpCheck, contractGetStore, contractSetStore, contractGetClosedStatus, contractSetClosedStatus, contractMenuUpdate, contractGetMenuVersion, contractGetMenu, contractGetOrderContent, contractStoreOvertime, contractFindDeliveryManOvertime, confirmPickUp, confirmDelivery, confirmReceipt, contractGetOrder, contractGetOrderStatus, contractStorePrepared, contractCurrentLocation, contractStoreUndone, contractDeliveryUndone, contractGetMessage, contractSendMessage, contractCheckAvailableOrder, contractGetAvailableOrder, signUpReset, checkUser, contractGetTime, contractSetPreparationTime, contractSetDeliveryTime, contractCancelOrder } from "./BlofoodWeb3.mjs";
 import express from "express";
 import bodyParser from 'body-parser';
 const app = express();
@@ -441,6 +441,67 @@ app.post("/contract/getAvailableOrder", async (req, res) => {
     }
 })
 
+// 監聽event狀態
+app.post("/contract/eventStatus", async (req, res) => {
+    try {
+        console.log(req.body);
+        let { contractAddress, wallet, id } = req.body;
+        let _result = await contractEvent(contractAddress, wallet, id);
+        res.status(200).json({ result: _result });
+    } catch (error) {
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+
+// 獲得訂單時間、店家準備時間以及外送員路線估計時間
+app.post("/contract/getTime", async (req, res) => {
+    try {
+        console.log(req.body);
+        let { contractAddress, wallet, id } = req.body;
+        let _result = await contractGetTime(contractAddress, wallet, id);
+        res.status(200).json({ result: _result });
+    } catch (error) {
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+// 寫入店家準備時間
+app.post("/contract/setPreparationTime", async (req, res) => {
+    try {
+        console.log(req.body);
+        let { contractAddress, storeWallet, storePassword, id, preparationTime } = req.body;
+        let status = await contractSetPreparationTime(contractAddress, storeWallet, storePassword, id, preparationTime);
+        res.status(200).json({ status: status });
+    } catch (error) {
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+// 寫入外送員路線估計時間
+app.post("/setDeliveryTime", async (req, res) => {
+    try {
+        console.log(req.body);
+        let { contractAddress, consumerWallet, consumerPassword, id, deliveryTime } = req.body;
+        let status = await contractSetDeliveryTime(contractAddress, consumerWallet, consumerPassword, id, deliveryTime);
+        res.status(200).json({ status: status });
+    } catch (error) {
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+
+// 取消訂單
+app.post("/contract/cancelOrder", async (req, res) => {
+    try {
+        console.log(req.body);
+        let { contractAddress, consumerWallet, consumerPassword, id } = req.body;
+        let status = await contractCancelOrder(contractAddress, consumerWallet, consumerPassword, id);
+        res.status(200).json({ status: status });
+    } catch (error) {
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
 
 app.listen(port, () => {
     console.log(`伺服器正在本地執行，Port 為 : ${port}`)
