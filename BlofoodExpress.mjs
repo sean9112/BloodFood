@@ -6,7 +6,7 @@ const port = 15000;
 
 app.use(bodyParser.urlencoded({ extended: true }));
 
-let signUpContract = "0xec6E3A439d960c4136354A47C0cE6D89729cB2E1";
+let signUpContract = "0xe483f0AA99180D2BA259C9Cf73f934FBcfc1A492";
 
 
 // 創建帳戶
@@ -41,7 +41,7 @@ app.post("/getBalance", async (req, res) => {
 app.post("/signUp/reset", async (req, res) => {
     try {
         console.log("reset");
-        let _status = await signUpReset();
+        let _status = await signUpReset(signUpContract);
         res.status(200).json({ status: _status });
     } catch (error) {
         res.status(500).json({ error: 'Internal Server Error' });

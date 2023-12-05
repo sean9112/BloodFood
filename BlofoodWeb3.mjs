@@ -1,7 +1,7 @@
 import Web3 from "web3";
 import fs from "fs";
 
-const etherBaseAccount = "0xbedd39b93dc7d8c21234302bb3719b1ea5cfef12"
+const etherBaseAccount = "0x99a84e6d40f35279b68a58a0fab19d99d7e38bd5"
 
 // 外部 Function
 
@@ -75,7 +75,7 @@ async function deploySignUp() {
 }
 
 // 重置註冊合約
-async function signUpReset() {
+async function signUpReset(signUpContract) {
     try {
         const Account = etherBaseAccount;
         const Password = "0";
@@ -90,7 +90,7 @@ async function signUpReset() {
         }
 
         const ABI = JSON.parse(fs.readFileSync('./SignUp.abi', 'utf8'));
-        const SC = '0x6ee9957aef5f4073c6af71441ec7962527c37671';
+        const SC = signUpContract;
         const Contract = new web3.eth.Contract(ABI, SC);
 
         const transactionReceipt = await Contract.methods.reset().send({ from: Account });
@@ -1071,7 +1071,7 @@ async function contractSetPreparationTime(contractAddress, storeWallet, storePas
         const ABI = JSON.parse(fs.readFileSync('./Order.abi', 'utf8'));
         const SC = contractAddress;
         const Contract = new web3.eth.Contract(ABI, SC);
-        const transactionReceipt = await Contract.methods.setStoreTime(_id, _preparationTime).send({ from: Account });
+        const transactionReceipt = await Contract.methods.setPreparationTime(_id, _preparationTime).send({ from: Account });
         console.log(transactionReceipt);
         if (transactionReceipt.status) {
             console.log("寫入店家準備時間成功")
