@@ -265,7 +265,7 @@ async function checkUser(wallet, password) {
 // 訂單合約
 
 // 部署合約
-async function deploy(storePassword, _storeName, _storeAddress, _storePhone, _storeWallet, _storeTag, _latitudeAndLongitude, _menuLink, _storeEmail) {
+async function deploy(storePassword, _storeName, _storeAddress, _storePhone, _storeWallet, _storeTag, _latitudeAndLongitude, _menuLink, _storeEmail, _storeImageLink) {
     console.log("開始部署合約...");
     const Account = _storeWallet;
     const Password = storePassword
@@ -294,7 +294,8 @@ async function deploy(storePassword, _storeName, _storeAddress, _storePhone, _st
                 _storeTag,
                 _latitudeAndLongitude,
                 _menuLink,
-                _storeEmail
+                _storeEmail,
+                _storeImageLink
             ]
         }).send({
             from: Account,
@@ -332,7 +333,7 @@ async function contractGetStore(contractAddress, wallet) {
 }
 
 // 更改店家資訊
-async function contractSetStore(contractAddress, storePassword, _storeName, _storeAddress, _storePhone, _storeWallet, _storeTag, _latitudeAndLongitude, _storeEmail) {
+async function contractSetStore(contractAddress, storePassword, _storeName, _storeAddress, _storePhone, _storeWallet, _storeTag, _latitudeAndLongitude, _storeEmail, _storeImageLink) {
     try {
         const Account = _storeWallet;
         const Password = storePassword;
@@ -348,7 +349,7 @@ async function contractSetStore(contractAddress, storePassword, _storeName, _sto
         const SC = contractAddress;
         const Contract = new web3.eth.Contract(ABI, SC);
 
-        const transactionReceipt = await Contract.methods.setStore(_storeName, _storeAddress, _storePhone, _storeWallet, _storeTag, _latitudeAndLongitude, _storeEmail)
+        const transactionReceipt = await Contract.methods.setStore(_storeName, _storeAddress, _storePhone, _storeWallet, _storeTag, _latitudeAndLongitude, _storeEmail, _storeImageLink)
             .send({ from: Account });
 
         console.log(transactionReceipt);
@@ -519,6 +520,24 @@ async function contractCreateOrder(contractAddress, consumerPassword, _consumerN
         return _ID;
     } catch (error) {
         console.error("建立訂單出錯", error);
+        throw error;
+    }
+}
+
+// 回傳訂單菜單版本
+async function contractGetOrderMenuVersion(contractAddress, wallet, _id) {
+    try {
+        const Account = wallet;
+        await new Promise(resolve => setTimeout(resolve, 5000));
+
+        const ABI = JSON.parse(fs.readFileSync('./Order.abi', 'utf8'));
+        const SC = contractAddress;
+        const Contract = new web3.eth.Contract(ABI, SC);
+        let _result = await Contract.methods.getOrderMenuVersion(_id).call({ from: Account });
+        console.log("result:", _result);
+        return _result;
+    } catch (error) {
+        console.error("回傳訂單菜單版本出錯", error);
         throw error;
     }
 }
@@ -1149,4 +1168,4 @@ async function contractCancelOrder(contractAddress, consumerWallet, consumerPass
 }
 
 
-export { createAccount, getBalance, deploy, contractCreateOrder, contractPushOrderContent, contractStoreAcceptOrder, contractDeliveryAcceptOrder, deploySignUp, signUpAddContract, signUpGetContract, signUpCheck, contractGetStore, contractSetStore, contractGetClosedStatus, contractSetClosedStatus, contractMenuUpdate, contractGetMenuVersion, contractGetMenu, contractGetOrderContent, contractStoreOvertime, contractFindDeliveryManOvertime, confirmPickUp, confirmDelivery, confirmReceipt, contractGetOrder, contractGetOrderStatus, contractStorePrepared, contractCurrentLocation, contractStoreUndone, contractDeliveryUndone, contractGetMessage, contractSendMessage, contractCheckAvailableOrder, contractGetAvailableOrder, signUpReset, checkUser, contractGetTime, contractSetPreparationTime, contractSetDeliveryTime, contractCancelOrder };
+export { createAccount, getBalance, deploy, contractCreateOrder, contractPushOrderContent, contractStoreAcceptOrder, contractDeliveryAcceptOrder, deploySignUp, signUpAddContract, signUpGetContract, signUpCheck, contractGetStore, contractSetStore, contractGetClosedStatus, contractSetClosedStatus, contractMenuUpdate, contractGetMenuVersion, contractGetMenu, contractGetOrderContent, contractStoreOvertime, contractFindDeliveryManOvertime, confirmPickUp, confirmDelivery, confirmReceipt, contractGetOrder, contractGetOrderStatus, contractStorePrepared, contractCurrentLocation, contractStoreUndone, contractDeliveryUndone, contractGetMessage, contractSendMessage, contractCheckAvailableOrder, contractGetAvailableOrder, signUpReset, checkUser, contractGetTime, contractSetPreparationTime, contractSetDeliveryTime, contractCancelOrder, contractGetOrderMenuVersion };

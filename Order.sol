@@ -14,6 +14,7 @@ contract Order {
     string public latitudeAndLongitude; // 店家經緯度
     uint public menuVersion;
     string public storeEmail;
+    string public storeImageLink;
 
     bool public closedStatus;
 
@@ -29,7 +30,8 @@ contract Order {
         string memory _storeTag,
         string memory _latitudeAndLongitude,
         string memory _menuLink,
-        string memory _storeEmail
+        string memory _storeEmail,
+        string memory _storeImageLink
     ) {
         // 建立合約時寫入店家資訊
         storeName = _storeName;
@@ -40,6 +42,7 @@ contract Order {
         latitudeAndLongitude = _latitudeAndLongitude;
         menuLink[0] = _menuLink;
         storeEmail = _storeEmail;
+        storeImageLink = _storeImageLink;
     }
 
     // 店家資訊
@@ -56,7 +59,9 @@ contract Order {
             string memory,
             string memory,
             string memory,
-            string memory
+            string memory,
+            string memory,
+            uint
         )
     {
         // 獲得店家資訊
@@ -69,7 +74,9 @@ contract Order {
             storeTag,
             latitudeAndLongitude,
             menuLink[menuVersion],
-            storeEmail
+            storeEmail,
+            storeImageLink,
+            menuVersion
         );
     }
 
@@ -80,7 +87,8 @@ contract Order {
         address payable _storeWallet,
         string memory _storeTag,
         string memory _latitudeAndLongitude,
-        string memory _storeEmail
+        string memory _storeEmail,
+        string memory _storeImageLink
     ) public {
         // 更改店家資訊
         storeName = _storeName;
@@ -90,6 +98,7 @@ contract Order {
         storeTag = _storeTag;
         latitudeAndLongitude = _latitudeAndLongitude;
         storeEmail = _storeEmail;
+        storeImageLink = _storeImageLink;
     }
 
     function getClosedStatus() public view returns (bool) {
@@ -150,7 +159,7 @@ contract Order {
     mapping(uint => OrderStruct) public orders; // 使用映射存儲訂單
     mapping(uint => MessageStruct[]) public messages; // 使用映射存儲訊息
     mapping(uint => OrderContentStruct[]) public orderContents; // 使用映射存儲餐點內容
-    mapping(uint => uint) public currentMenuVersion;
+    mapping(uint => uint) public orderMenuVersion;
     mapping(uint => TimeStruct) public time;
 
     struct Consumer {
@@ -235,10 +244,15 @@ contract Order {
         newOrder.orderStatus = OrderStatus.WaitForStore;
 
         orders[newOrder.orderID] = newOrder; // 將訂單結構存入映射
-        currentMenuVersion[newOrder.orderID] = menuVersion;
+        orderMenuVersion[newOrder.orderID] = menuVersion;
         currentID++;
         time[newOrder.orderID].orderTime = block.timestamp;
         emit Status(newOrder.orderID, "WaitForStore");
+    }
+
+    function getOrderMenuVersion(uint _id) public view returns (uint) {
+        // 回傳訂單菜單版本
+        return orderMenuVersion[_id];
     }
 
     function pushOrderContent(
