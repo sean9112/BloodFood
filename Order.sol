@@ -193,13 +193,9 @@ contract Order {
         uint fee; // 外送費
         string note; // 備註文字
         uint foodCost; // 餐點費用
-        bool storeAccept; // 店家接受訂單
         Delivery delivery; // 宣告外送員資訊結構
-        bool storeStatus; // 店家準備狀態
         OrderStatus orderStatus; // 訂單當前狀態
         string deliveryLocation; // 外送員當前位置
-        bool receiveConfirm; // 收餐確認
-        bool deliveryConfirm; // 送達確認
     }
 
     // 時間
@@ -260,7 +256,7 @@ contract Order {
     function pushOrderContent(
         uint _id,
         string memory _orderid,
-        string memory _num
+        string memory _num,
         uint _price
     ) public {
         // push 餐點內容至訂單
@@ -283,7 +279,6 @@ contract Order {
             emit Status(_id, "Confirmed");
         } else if (_storeAccept == true) {
             // 店家接受
-            orders[_id].storeAccept = _storeAccept;
             orders[_id].orderStatus = OrderStatus.WaitForConsumer;
             emit Status(_id, "WaitForConsumer");
         }
@@ -328,7 +323,6 @@ contract Order {
     function confirmPickUp(uint _id) public {
         // 外送員收餐確認
         orders[_id].orderStatus = OrderStatus.Delivering;
-        orders[_id].receiveConfirm = true;
         emit Status(_id, "Delivering");
     }
 
@@ -344,7 +338,6 @@ contract Order {
         orders[_id].delivery.Wallet.transfer(orders[_id].fee); // 轉帳給外送員
 
         orders[_id].orderStatus = OrderStatus.Confirmed;
-        orders[_id].deliveryConfirm = true;
         emit Status(_id, "Confirmed");
     }
 
@@ -356,20 +349,16 @@ contract Order {
 
     function getOrderStatus(
         uint _id
-    ) public view returns (bool, OrderStatus, string memory, bool, bool) {
+    ) public view returns (OrderStatus, string memory) {
         // 回傳部分訂單狀態
         return (
-            orders[_id].storeStatus,
             orders[_id].orderStatus,
-            orders[_id].deliveryLocation,
-            orders[_id].receiveConfirm,
-            orders[_id].deliveryConfirm
+            orders[_id].deliveryLocation
         );
     }
 
     function storePrepared(uint _id) public {
         // 店家已準備好餐點
-        orders[_id].storeStatus = true;
         orders[_id].orderStatus = OrderStatus.DeliveryPicksUp;
         emit Status(_id, "DeliveryPicksUp");
     }
