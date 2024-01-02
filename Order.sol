@@ -140,7 +140,8 @@ contract Order {
         FindDeliveryManOvertime,
         StoreUndone,
         DeliveryUndone,
-        CancelOrder
+        CancelOrder,
+        WaitForConsumer
     }
 
     struct MessageStruct {
@@ -154,6 +155,7 @@ contract Order {
         // 餐點內容結構
         string id;
         string num;
+        uint price;
     }
 
     mapping(uint => OrderStruct) public orders; // 使用映射存儲訂單
@@ -259,9 +261,10 @@ contract Order {
         uint _id,
         string memory _orderid,
         string memory _num
+        uint _price
     ) public {
         // push 餐點內容至訂單
-        orderContents[_id].push(OrderContentStruct({id: _orderid, num: _num}));
+        orderContents[_id].push(OrderContentStruct({id: _orderid, num: _num, price: _price}));
     }
 
     function getOrderContent(
@@ -281,8 +284,8 @@ contract Order {
         } else if (_storeAccept == true) {
             // 店家接受
             orders[_id].storeAccept = _storeAccept;
-            orders[_id].orderStatus = OrderStatus.FindDeliveryMan;
-            emit Status(_id, "FindDeliveryMan");
+            orders[_id].orderStatus = OrderStatus.WaitForConsumer;
+            emit Status(_id, "WaitForConsumer");
         }
     }
 
@@ -452,5 +455,11 @@ contract Order {
             }
         }
         return availableOrderID;
+    }
+
+    function preparationTimeConfirm(uint _id) public {
+        // 消費者確認店家準備時間
+        orders[_id].orderStatus = OrderStatus.FindDeliveryMan;
+        emit Status(_id, "FindDeliveryMan");
     }
 }

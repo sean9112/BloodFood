@@ -543,7 +543,7 @@ async function contractGetOrderMenuVersion(contractAddress, wallet, _id) {
 }
 
 // 推送餐點內容
-async function contractPushOrderContent(contractAddress, consumerWallet, consumerPassword, _id, _orderID, _num) {
+async function contractPushOrderContent(contractAddress, consumerWallet, consumerPassword, _id, _orderID, _num, _price) {
     try {
         const Account = consumerWallet;
         const Password = consumerPassword;
@@ -559,7 +559,7 @@ async function contractPushOrderContent(contractAddress, consumerWallet, consume
         const SC = contractAddress;
         const Contract = new web3.eth.Contract(ABI, SC);
 
-        const transactionReceipt = await Contract.methods.pushOrderContent(_id, _orderID, _num)
+        const transactionReceipt = await Contract.methods.pushOrderContent(_id, _orderID, _num, _price)
             .send({ from: Account });
         console.log(transactionReceipt);
         if (transactionReceipt.status) {
@@ -1167,5 +1167,35 @@ async function contractCancelOrder(contractAddress, consumerWallet, consumerPass
     }
 }
 
+// 消費者確認店家準備時間
+async function contractPreparationTimeConfirm(contractAddress, consumerWallet, consumerPassword, _id) {
+    try {
+        const Account = consumerWallet;
+        const Password = consumerPassword;
+        await new Promise(resolve => setTimeout(resolve, 5000));
+        try {
+            await web3.eth.personal.unlockAccount(Account, Password)
+            console.log("成功解鎖帳戶");
+        } catch {
+            console.error("解鎖帳戶出錯:", error);
+            throw error;
+        }
+        const ABI = JSON.parse(fs.readFileSync('./Order.abi', 'utf8'));
+        const SC = contractAddress;
+        const Contract = new web3.eth.Contract(ABI, SC);
+        const transactionReceipt = await Contract.methods.preparationTimeConfirm(_id).send({ from: Account });
+        console.log(transactionReceipt);
+        if (transactionReceipt.status) {
+            console.log("消費者確認店家準備時間成功")
+            return true;
+        } else {
+            console.error("消費者確認店家準備時間失敗");
+            return false;
+        }
+    } catch (error) {
+        console.error("消費者確認店家準備時間出錯", error);
+        throw error;
+    }
+}
 
 export { createAccount, getBalance, deploy, contractCreateOrder, contractPushOrderContent, contractStoreAcceptOrder, contractDeliveryAcceptOrder, deploySignUp, signUpAddContract, signUpGetContract, signUpCheck, contractGetStore, contractSetStore, contractGetClosedStatus, contractSetClosedStatus, contractMenuUpdate, contractGetMenuVersion, contractGetMenu, contractGetOrderContent, contractStoreOvertime, contractFindDeliveryManOvertime, confirmPickUp, confirmDelivery, confirmReceipt, contractGetOrder, contractGetOrderStatus, contractStorePrepared, contractCurrentLocation, contractStoreUndone, contractDeliveryUndone, contractGetMessage, contractSendMessage, contractCheckAvailableOrder, contractGetAvailableOrder, signUpReset, checkUser, contractGetTime, contractSetPreparationTime, contractSetDeliveryTime, contractCancelOrder, contractGetOrderMenuVersion };

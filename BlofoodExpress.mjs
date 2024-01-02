@@ -255,8 +255,8 @@ app.post("/contract/pushOrderContent", async (req, res) => {
     console.log("執行 pushOrderContent");
     try {
         console.log(req.body);
-        let { contractAddress, consumerWallet, consumerPassword, id, orderID, num } = req.body;
-        let status = await contractPushOrderContent(contractAddress, consumerWallet, consumerPassword, id, orderID, num);
+        let { contractAddress, consumerWallet, consumerPassword, id, orderID, num, price } = req.body;
+        let status = await contractPushOrderContent(contractAddress, consumerWallet, consumerPassword, id, orderID, num, price);
         res.status(200).json({ status: status });
     } catch (error) {
         console.error(error);
@@ -591,6 +591,21 @@ app.post("/contract/cancelOrder", async (req, res) => {
         res.status(500).json({ error: 'Internal Server Error' });
     }
     console.log("cancelOrder 執行完畢");
+});
+
+// 消費者確認店家準備時間
+app.post("/contract/preparationTimeConfirm", async (req, res) => {
+    console.log("執行 preparationTimeConfirm");
+    try {
+        console.log(req.body);
+        let { contractAddress, consumerWallet, consumerPassword, id } = req.body;
+        let status = await contractPreparationTimeConfirm(contractAddress, consumerWallet, consumerPassword, id);
+        res.status(200).json({ status: status });
+    } catch (error) {
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+
+    console.log("preparationTimeConfirm 執行完畢");
 });
 
 app.listen(port, () => {
