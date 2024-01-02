@@ -387,7 +387,7 @@ app.post("/contract/getOrder", async (req, res) => {
         let { contractAddress, wallet, id } = req.body;
         let _result = await contractGetOrder(contractAddress, wallet, id);
         res.status(200).json({
-            id: _result['0'], consumer: _result['1'], fee: _result['2'], note: _result['3'], foodCost: _result['4'], storeAccept: _result['5'], delivery: _result['6'], storeStatus: _result['7'], orderStatus: _result['8'], deliveryLocation: _result['9'], receiveConfirm: _result['10'], deliveryConfirm: _result['11']
+            id: _result['0'], consumer: _result['1'], fee: _result['2'], note: _result['3'], foodCost: _result['4'], delivery: _result['5'], orderStatus: _result['6'], deliveryLocation: _result['7']
         });
     } catch (error) {
         res.status(500).json({ error: 'Internal Server Error' });
@@ -402,7 +402,7 @@ app.post("/contract/getOrderStatus", async (req, res) => {
         console.log(req.body);
         let { contractAddress, wallet, id } = req.body;
         let _result = await contractGetOrderStatus(contractAddress, wallet, id);
-        res.status(200).json({ storeStatus: _result['0'], orderStatus: _result['1'], deliveryLocation: _result['2'], receiveConfirm: _result['3'], deliveryConfirm: _result['4'] });
+        res.status(200).json({ orderStatus: _result['0'], deliveryLocation: _result['1'] });
     } catch (error) {
         res.status(500).json({ error: 'Internal Server Error' });
     }
