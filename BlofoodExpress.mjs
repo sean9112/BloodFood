@@ -6,7 +6,7 @@ const port = 15000;
 
 app.use(bodyParser.urlencoded({ extended: true }));
 
-let signUpContract = "0x04EcFde8eb5cD3e4283E76bA380c187a0b8FC57c";
+let signUpContract = "0xA3C88f843815D8Ce7037ff38D08729bEdAABfc66";
 
 
 // 創建帳戶
