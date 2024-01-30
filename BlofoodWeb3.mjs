@@ -1198,4 +1198,22 @@ async function contractPreparationTimeConfirm(contractAddress, consumerWallet, c
     }
 }
 
-export { createAccount, getBalance, deploy, contractCreateOrder, contractPushOrderContent, contractStoreAcceptOrder, contractDeliveryAcceptOrder, deploySignUp, signUpAddContract, signUpGetContract, signUpCheck, contractGetStore, contractSetStore, contractGetClosedStatus, contractSetClosedStatus, contractMenuUpdate, contractGetMenuVersion, contractGetMenu, contractGetOrderContent, contractStoreOvertime, contractFindDeliveryManOvertime, confirmPickUp, confirmDelivery, confirmReceipt, contractGetOrder, contractGetOrderStatus, contractStorePrepared, contractCurrentLocation, contractStoreUndone, contractDeliveryUndone, contractGetMessage, contractSendMessage, contractCheckAvailableOrder, contractGetAvailableOrder, signUpReset, checkUser, contractGetTime, contractSetPreparationTime, contractSetDeliveryTime, contractCancelOrder, contractGetOrderMenuVersion, contractPreparationTimeConfirm };
+// 店家查看可接訂單的id
+async function contractGetStoreAvailableOrderID(contractAddress, storeWallet) {
+    try {
+        const Account = storeWallet;
+        await new Promise(resolve => setTimeout(resolve, 5000));
+
+        const ABI = JSON.parse(fs.readFileSync('./Order.abi', 'utf8'));
+        const SC = contractAddress;
+        const Contract = new web3.eth.Contract(ABI, SC);
+        let _result = await Contract.methods.getStoreAvailableOrderID().call({ from: Account });
+        console.log("result:", _result);
+        return _result;
+    } catch (error) {
+        console.error("店家查看可接訂單的id出錯", error);
+        throw error;
+    }
+}
+
+export { createAccount, getBalance, deploy, contractCreateOrder, contractPushOrderContent, contractStoreAcceptOrder, contractDeliveryAcceptOrder, deploySignUp, signUpAddContract, signUpGetContract, signUpCheck, contractGetStore, contractSetStore, contractGetClosedStatus, contractSetClosedStatus, contractMenuUpdate, contractGetMenuVersion, contractGetMenu, contractGetOrderContent, contractStoreOvertime, contractFindDeliveryManOvertime, confirmPickUp, confirmDelivery, confirmReceipt, contractGetOrder, contractGetOrderStatus, contractStorePrepared, contractCurrentLocation, contractStoreUndone, contractDeliveryUndone, contractGetMessage, contractSendMessage, contractCheckAvailableOrder, contractGetAvailableOrder, signUpReset, checkUser, contractGetTime, contractSetPreparationTime, contractSetDeliveryTime, contractCancelOrder, contractGetOrderMenuVersion, contractPreparationTimeConfirm, contractGetStoreAvailableOrderID };

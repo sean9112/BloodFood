@@ -1,4 +1,4 @@
-import { createAccount, getBalance, deploy, contractCreateOrder, contractPushOrderContent, contractStoreAcceptOrder, contractDeliveryAcceptOrder, deploySignUp, signUpAddContract, signUpGetContract, signUpCheck, contractGetStore, contractSetStore, contractGetClosedStatus, contractSetClosedStatus, contractMenuUpdate, contractGetMenuVersion, contractGetMenu, contractGetOrderContent, contractStoreOvertime, contractFindDeliveryManOvertime, confirmPickUp, confirmDelivery, confirmReceipt, contractGetOrder, contractGetOrderStatus, contractStorePrepared, contractCurrentLocation, contractStoreUndone, contractDeliveryUndone, contractGetMessage, contractSendMessage, contractCheckAvailableOrder, contractGetAvailableOrder, signUpReset, checkUser, contractGetTime, contractSetPreparationTime, contractSetDeliveryTime, contractCancelOrder, contractGetOrderMenuVersion, contractPreparationTimeConfirm } from "./BlofoodWeb3.mjs";
+import { createAccount, getBalance, deploy, contractCreateOrder, contractPushOrderContent, contractStoreAcceptOrder, contractDeliveryAcceptOrder, deploySignUp, signUpAddContract, signUpGetContract, signUpCheck, contractGetStore, contractSetStore, contractGetClosedStatus, contractSetClosedStatus, contractMenuUpdate, contractGetMenuVersion, contractGetMenu, contractGetOrderContent, contractStoreOvertime, contractFindDeliveryManOvertime, confirmPickUp, confirmDelivery, confirmReceipt, contractGetOrder, contractGetOrderStatus, contractStorePrepared, contractCurrentLocation, contractStoreUndone, contractDeliveryUndone, contractGetMessage, contractSendMessage, contractCheckAvailableOrder, contractGetAvailableOrder, signUpReset, checkUser, contractGetTime, contractSetPreparationTime, contractSetDeliveryTime, contractCancelOrder, contractGetOrderMenuVersion, contractPreparationTimeConfirm, contractGetStoreAvailableOrderID } from "./BlofoodWeb3.mjs";
 import express from "express";
 import bodyParser from 'body-parser';
 const app = express();
@@ -606,6 +606,20 @@ app.post("/contract/preparationTimeConfirm", async (req, res) => {
     }
 
     console.log("preparationTimeConfirm 執行完畢");
+});
+
+// 店家查看可接訂單的id
+app.post("/contract/getStoreAvailableOrderID", async (req, res) => {
+    console.log("執行 getStoreAvailableOrderID");
+    try {
+        console.log(req.body);
+        let { contractAddress, storeWallet } = req.body;
+        let _availableOrderID = await contractGetStoreAvailableOrderID(contractAddress, storeWallet);
+        res.status(200).json({ availableOrderID: _availableOrderID });
+    } catch (error) {
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+    console.log("getStoreAvailableOrderID 執行完畢");
 });
 
 app.listen(port, () => {

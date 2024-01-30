@@ -451,4 +451,23 @@ contract Order {
         orders[_id].orderStatus = OrderStatus.FindDeliveryMan;
         emit Status(_id, "FindDeliveryMan");
     }
+
+    // 店家查看可接訂單的id
+    function getStoreAvailableOrderID() public view returns (uint[] memory) {
+        uint count = 0;
+        for (uint i = nextOrderToCheck; i < currentID; i++) {
+            if (orders[i].orderStatus == OrderStatus.WaitForStore) {
+                count++;
+            }
+        }
+        uint[] memory availableOrderID = new uint[](count);
+        uint j = 0;
+        for (uint i = nextOrderToCheck; i < currentID; i++) {
+            if (orders[i].orderStatus == OrderStatus.WaitForStore) {
+                availableOrderID[j] = i;
+                j++;
+            }
+        }
+        return availableOrderID;
+    }
 }
