@@ -19,6 +19,7 @@ contract Order {
     bool public closedStatus;
 
     uint public nextOrderToCheck = 0;
+    uint public nextOrderToCheck_store = 0;
 
     mapping(uint => string) public menuLink; // 用菜單版本指向菜單連結
 
@@ -455,14 +456,14 @@ contract Order {
     // 店家查看可接訂單的id
     function getStoreAvailableOrderID() public view returns (uint[] memory) {
         uint count = 0;
-        for (uint i = nextOrderToCheck; i < currentID; i++) {
+        for (uint i = nextOrderToCheck_store; i < currentID; i++) {
             if (orders[i].orderStatus == OrderStatus.WaitForStore) {
                 count++;
             }
         }
         uint[] memory availableOrderID = new uint[](count);
         uint j = 0;
-        for (uint i = nextOrderToCheck; i < currentID; i++) {
+        for (uint i = nextOrderToCheck_store; i < currentID; i++) {
             if (orders[i].orderStatus == OrderStatus.WaitForStore) {
                 availableOrderID[j] = i;
                 j++;
