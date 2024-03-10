@@ -16,7 +16,7 @@ contract Order {
     string public storeEmail;
     string public storeImageLink;
 
-    bool public closedStatus;
+    string public closedStatus;
 
     uint public nextOrderToCheck = 0;
     uint public nextOrderToCheck_store = 0;
@@ -102,12 +102,12 @@ contract Order {
         storeImageLink = _storeImageLink;
     }
 
-    function getClosedStatus() public view returns (bool) {
+    function getClosedStatus() public view returns (string memory) {
         // 獲得休業狀態
         return closedStatus;
     }
 
-    function setClosedStatus(bool _closedStatus) public {
+    function setClosedStatus(string memory _closedStatus) public {
         // 更改休業狀態
         closedStatus = _closedStatus;
     }
@@ -299,12 +299,15 @@ contract Order {
         string memory _deliveryEmail
     ) public {
         // 寫入外送員資訊
-        orders[_id].delivery.Name = _deliveryName;
-        orders[_id].delivery.Phone = _deliveryPhone;
-        orders[_id].delivery.Wallet = _deliveryWallet;
-        orders[_id].delivery.Email = _deliveryEmail;
-        orders[_id].orderStatus = OrderStatus.StorePreparing;
-        emit Status(_id, "StorePreparing");
+        bytes memory strBytes = bytes(orders[_id].delivery.Name);
+        if (strBytes.length == 0){
+            orders[_id].delivery.Name = _deliveryName;
+            orders[_id].delivery.Phone = _deliveryPhone;
+            orders[_id].delivery.Wallet = _deliveryWallet;
+            orders[_id].delivery.Email = _deliveryEmail;
+            orders[_id].orderStatus = OrderStatus.StorePreparing;
+            emit Status(_id, "StorePreparing");
+        }
     }
 
     // 超時 function
